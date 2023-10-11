@@ -328,9 +328,8 @@ FROM EMPLOYEE;
 SELECT EXTRACT(YEAR, FROM STR_TO_DATE(SUBSTR(EMP_NO,1,6), '%y%m%d'))
 FROM EMPLOYEE;
 
-SELECT STR_TO_DATE(SUBSTR(EMP_NO,1,6), '%y%m%d'), SUBSTR(EMP_NO,1,6)
+SELECT STR_TO_DATE(SUBSTR(EMP_NO,1,6), '%y%m%d')
 FROM EMPLOYEE;
-
 
 -- 5.  부서코드가 D5이면 총무부, D6이면 기획부, D9이면 영업부로 처리하시오.
 --   단, 부서코드가 D5, D6, D9 인 직원의 정보만 조회함

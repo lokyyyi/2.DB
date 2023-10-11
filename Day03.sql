@@ -1,0 +1,353 @@
+-- DATE_ADD() , DATE_SUB()
+SELECT EMP_NAME,
+		HIRE_DATE,
+		DATE_ADD(HIRE_DATE, INTERVAL 2 YEAR),
+		DATE_SUB(HIRE_DATE, INTERVAL 1 YEAR)
+FROM EMPLOYEE;
+
+-- DAYOFWEEK()
+-- 요일
+-- 1 : 일요일 ! 7 : 토요일
+
+SELECT DAYOFWEEK(NOW());
+
+-- EMPLOYEE 에서 사원이 입사한 날의 요일을 조회 이때 숫자가 아닌 일요일~ 토요일로 조회
+
+SELECT EMP_NAME, 
+	   CASE
+	   	WHEN DAYOFWEEK(HIRE_DATE) = 1 THEN '일요일'
+	   	WHEN DAYOFWEEK(HIRE_DATE) = 2 THEN '월요일'
+	   	WHEN DAYOFWEEK(HIRE_DATE) = 3 THEN '화요일'
+	   	WHEN DAYOFWEEK(HIRE_DATE) = 4 THEN '수요일'
+	   	WHEN DAYOFWEEK(HIRE_DATE) = 5 THEN '목요일'
+	   	WHEN DAYOFWEEK(HIRE_DATE) = 6 THEN '금요일'
+	   	WHEN DAYOFWEEK(HIRE_DATE) = 7 THEN '토요일'
+	   END '요일'
+FROM EMPLOYEE;
+
+-- LAST_DAY() 주어진 날짜의 마지막 일자를 조회
+SELECT LAST_DAY(NOW());
+
+-- 실습1
+-- EMPLOYEE 테이블에서
+-- 근무 년수가 25년 이상인 사원들의
+-- 사번, 사원명, 부서코드, 입사일 조회
+
+SELECT EMP_ID '사번', EMP_NAME '이름', DEPT_CODE '부서코드', HIRE_DATE '입사일'
+FROM EMPLOYEE
+WHERE DATE_ADD(HIRE_DATE, INTERVAL 25 YEAR) <= NOW();
+
+-- CAST(), CONVERT() : 주어진 값을 원하는 형식으로 변경하는 함수
+
+SELECT CAST(20231011 AS DATE), CONVERT(20231011, DATE);
+
+SELECT CAST(20202020111 AS CHAR), CAST(NOW() AS CHAR);
+
+SELECT '123' + '456';
+SELECT '123ABC' + '456', '123'+'4ADF5AF';
+
+
+-- 관계형 데이터베이스에서는 DBMS의 설정 정보들을 테이블 형태로 관리한다, 이를 데이터 사전(데이터 딕셔너리)라 부른다.
+-- 이를 기본적으로 시스템의 관리자만 설정 변경 가능. 단, 사용자 계정도 사용자가 접속한 동안만은 변경 가능, 재접속 하면 초기화
+
+SHOW TABLES;
+SELECT * FROM INFORMATION_SCHEMA.TABLES;
+
+SET TIME_ZONE = 'Asia/Seoul';
+
+SELECT NOW();
+SELECT @@SESSION.TIME_ZONE;
+
+
+-- 순서
+/* SELECT	5
+ * FROM		1
+ * WHERE	2
+ * GROUP BY 3
+ * HAVING	4
+ * ORDER BY 6
+ */
+
+SELECT  EMP_ID,
+		 EMP_NAME 이름,
+		 SALARY *12,
+		DEPT_CODE
+FROM EMPLOYEE
+ORDER BY 3;
+
+-- GROUP BY
+-- 특정 컬럼이나 계산식을 하나의 그룹으로 묶어 한 테이블 내에서 소그룹 별로 조회 하고자 할 때 선언하는 구문
+-- 사원 전체 급여 평균
+
+SELECT TRUNCATE(AVG(SALARY), -3)
+FROM EMPLOYEE;
+
+-- 부서 D1 의 평균 급여
+
+SELECT DEPT_CODE, TRUNCATE(AVG(SALARY), -3)
+FROM EMPLOYEE
+GROUP BY DEPT_CODE
+ORDER BY DEPT_CODE;
+
+-- 실습 2
+-- EMPLOYEE 테이블에서 부서별 총인원, 급여합계, 급여평균, 최대급여, 최소급여를 조회
+
+SELECT DEPT_CODE '부서',
+	   COUNT(EMP_ID) '부서별 총 인원',
+	   SUM(SALARY) '급여합계', 
+	   TRUNCATE(AVG(SALARY), -3) '급여평균',
+	   MAX(SALARY) '최대급여',
+	   MIN(SALARY) '최소급여'
+FROM EMPLOYEE
+GROUP BY DEPT_CODE
+ORDER BY DEPT_CODE;
+
+
+-- 실습 3
+-- EMPLOYEE 테이블에서 직급 별 보너스를 받는 사원의 수를 조회
+-- 직급코드 순으로 내림차순 정렬, 직급코드, 보너스 받는 사원 수를 조회
+SELECT JOB_CODE, BONUS
+FROM EMPLOYEE;
+
+SELECT JOB_CODE '직급코드', COUNT(BONUS) '보너스인원'
+FROM EMPLOYEE
+GROUP BY JOB_CODE
+ORDER BY JOB_CODE DESC;
+
+-- 실습 4 
+-- EMPLOYEE 테이블에서 남성직원과 여성직원수를 조회
+-- GROUP BY 에서 주어진 컬럼만이 아닌 함수도 사용가능
+
+SELECT SUBSTR(EMP_NO,8,1) '성별',
+	   COUNT(*) '직원수'
+FROM EMPLOYEE
+GROUP BY SUBSTR(EMP_NO,8,1);
+
+-- HAVING 구문
+-- GROUP BY 환 각 소그룹에 대한 조건을 작성할 때
+
+
+-- 부서별 급여 평균이 300만원 이상인 부서만 조회
+SELECT DEPT_CODE,
+	   TRUNCATE(AVG(SALARY),-3) '급여'
+FROM EMPLOYEE
+GROUP BY DEPT_CODE
+HAVING AVG(SALARY) > 3000000;
+
+
+-- 실습5
+-- 부서 별 그붋의 급여 합계 중 900만원을 초과하는 부서의 부서코드, 급여합계 조회
+SELECT DEPT_CODE '부서코드', SUM(SALARY) '급여합계'
+FROM EMPLOYEE
+GROUP BY DEPT_CODE
+HAVING SUM(SALARY) > 9000000;
+
+-- 다중 GROUP BY
+SELECT DEPT_CODE, JOB_CODE, SUM(SALARY)
+FROM EMPLOYEE
+GROUP BY DEPT_CODE, JOB_CODE
+ORDER BY 1,2;
+
+-- SET OPERATOR
+-- 두개 이상의 SELECT 한 결과 (RESULT SET) 을
+-- 합치는 집합 형태의 결과로 조회하는 명령어
+
+-- 합집합
+-- UNION 	: 두개 이상의 SELECT 한 결과를 하나로 구하는 명령어, 단 중복이 있을경우 중복되는 결과는 1번만 보여준다
+-- UNION ALL: 두개 이상의 SELECT 한 결과를 보여주지만, 단 중복잉 있을경우 중복 된 내용도 함께 보여준다
+
+SELECT EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+FROM EMPLOYEE
+WHERE DEPT_CODE = 'D5'
+UNION ALL
+SELECT EMP_ID, EMP_NAME, DEPT_CODE, SALARY
+FROM EMPLOYEE
+WHERE SALARY > 3000000;
+
+
+-- JOIN
+-- 두개 이상의 테이블을 합쳐 사용하는 명령 구문
+
+-- 만약 J6라는 직급을 가진 사원들의 근무 부서명이 궁금하다면?
+SELECT *
+FROM EMPLOYEE;
+
+SELECT TA.EMP_NAME, TA.DEPT_CODE
+FROM EMPLOYEE TA
+INNER JOIN DEPARTMENT TB ON TA.DEPT_CODE = TB.DEPT_ID
+WHERE TA.JOB_CODE = 'J6';
+
+
+SELECT *
+FROM EMPLOYEE
+JOIN DEPARTMENT ON(EMPLOYEE.DEPT_CODE = DEPARTMENT.DEPT_ID);
+
+-- 공통이름
+-- 1. ON() 사용
+SELECT EMP_ID, EMP_NAME, TB.JOB_CODE, JOB_NAME
+FROM EMPLOYEE TA
+JOIN JOB TB ON TA.JOB_CODE = TB.JOB_CODE; 
+
+-- 2.USING() 사용
+SELECT EMP_ID, EMP_NAME, JOB_CODE, JOB_NAME
+FROM EMPLOYEE
+JOIN JOB USING(JOB_CODE);
+
+-- 실습6
+-- EMPLOYEE 테이블의 직원 급여 정보와
+-- SAL_GRADE의 급여 등급을 합쳐서
+-- 사번, 사원명, 급여, 등급 기준 최소급여, 최대급여를 조회
+
+SELECT *
+FROM DEPARTMENT;
+SELECT *
+FROM EMPLOYEE;
+
+SELECT EMP_ID '사번', EMP_NAME '사원명', SALARY '급여', TB.MIN_SAL '등급기준 최소급여', TB.MAX_SAL '등급기준 최대급여'
+FROM EMPLOYEE TA
+JOIN SAL_GRADE TB ON TA.SAL_LEVEL = TB.SAL_LEVEL;
+
+-- INNER JOIN / OUTER JOIN(LEFT/RIGHT)
+-- INNER : 조건에 만족하는 데이터만
+
+SELECT EMP_NAME, DEPT_CODE, DEPT_TITLE
+FROM EMPLOYEE TA
+INNER JOIN DEPARTMENT TB ON TA.DEPT_CODE = TB.DEPT_ID;
+
+-- LEFT OUTER JOIN
+-- 조건을 만족하지않는경우 처음 테이블은 그냥 두고 두번째 테이블의 필드값은 NULL로 처리됌
+-- RIGHT OUTER JOIN
+-- 조건을 만족하지않는경우 두번째 테이블은 그냥 두고 첫번째 테이블의 필드값은 NULL로 처리됌
+
+SELECT EMP_NAME, DEPT_CODE, DEPT_TITLE
+FROM EMPLOYEE TA
+LEFT JOIN DEPARTMENT TB ON TA.DEPT_CODE = TB.DEPT_ID;
+
+-- SELF JOIN
+-- 자기자신을 조인하는 방법
+-- 한 테이블의 정보 중 값 비교가 필요한 정보들을 계산하여 조회하는 방식
+
+-- 직원의 정보와 직원을 관리하는 매니저의 정보를 조회
+
+SELECT TA.EMP_ID '사번', TA.EMP_NAME '이름', TA.MANAGER_ID '관리자 사번', TB.EMP_NAME '관리자명'
+FROM EMPLOYEE TA
+JOIN EMPLOYEE TB ON TA.MANAGER_ID = TB.EMP_ID;
+
+-- 다중 JOIN
+-- 여러개의 테이블을 JOIN 하는것
+-- 일반 조인과 선언방식은 같으나 앞어 조인한 결과를 기준으로 후에 조인할 테이블을 연결 짓는다
+-- 순서가 중요
+
+SELECT *
+FROM EMPLOYEE TA
+JOIN DEPARTMENT TB ON TA.DEPT_CODE = TB.DEPT_ID
+JOIN LOCATION TC ON TC.LOCAL_CODE = TB.LOCATION_ID;
+
+-- 실습 7
+-- 직급이 대리이면서 아시아 지역에서 근무하는 사원 조회
+-- 사번, 사원명, 직급명, 부서명, 근무지역명, 급여
+
+SELECT *
+FROM LOCATION;
+
+SELECT EMP_ID '사번', EMP_NAME '사원명', JOB_NAME '직급명', DEPT_TITLE '부서명',  
+CASE
+	WHEN TD.NATIONAL_CODE = 'KO' THEN '대한민국'
+	WHEN TD.NATIONAL_CODE = 'JP' THEN '일본'
+	WHEN TD.NATIONAL_CODE = 'CH' THEN '중국'
+END '근무지역명',
+SALARY '급여'
+FROM EMPLOYEE TA
+JOIN JOB TB ON TA.JOB_CODE = TB.JOB_CODE
+JOIN DEPARTMENT TC ON TC.DEPT_ID = TA.DEPT_CODE
+JOIN LOCATION TD ON TD.LOCAL_CODE = TC.LOCATION_ID
+WHERE (TD.LOCAL_CODE = 'L1' OR
+	  TD.LOCAL_CODE = 'L2' OR
+	  TD.LOCAL_CODE = 'L3') AND 
+	  TB.JOB_CODE = 'J6';
+  
+SELECT EMP_ID '사번', EMP_NAME '사원명', JOB_NAME '직급명', DEPT_TITLE '부서명',  
+CASE
+	WHEN TD.NATIONAL_CODE = 'KO' THEN '대한민국'
+	WHEN TD.NATIONAL_CODE = 'JP' THEN '일본'
+	WHEN TD.NATIONAL_CODE = 'CH' THEN '중국'
+END '근무지역명',
+SALARY '급여'
+FROM EMPLOYEE TA
+JOIN JOB TB ON TA.JOB_CODE = TB.JOB_CODE AND JOB_NAME ='대리'
+JOIN DEPARTMENT TC ON TC.DEPT_ID = TA.DEPT_CODE
+JOIN LOCATION TD ON TD.LOCAL_CODE = TC.LOCATION_ID AND LOCAL_NAME LIKE 'ASIA%';
+
+
+-- SUB QUERY
+-- 주가 되는 메인쿼리 안에서 조건이나 하나의 검색을 위한 또 하나의 쿼리를 추가하여 작성하는기법
+
+-- 단일 행 서브쿼리
+-- 결과값이 1개 나오는 서브쿼리
+
+-- 기존 작성방식
+-- 1) 최소급여 확인
+
+SELECT MIN(SALARY) FROM EMPLOYEE; -- 13800000
+
+-- 2) 최소급여 받는 사원의 정보 확인
+SELECT * FROM EMPLOYEE WHERE SALARY = 1380000;
+
+-- 활용
+
+SELECT *
+FROM EMPLOYEE
+WHERE SALARY = (SELECT MIN(SALARY) FROM EMPLOYEE);
+
+-- 다중 행 서브쿼리
+
+-- 각 직급별 최소 급여 받는 사원 정보 출력
+SELECT JOB_CODE, MIN(SALARY)
+FROM EMPLOYEE
+GROUP BY JOB_CODE;
+
+SELECT *
+FROM EMPLOYEE TA
+WHERE SALARY IN(SELECT MIN(SALARY) FROM EMPLOYEE GROUP BY JOB_CODE);
+
+-- 다중 열 다중 행 서브쿼리
+-- 여러 컬럼과 여러 로우를 가지는 서브쿼리를 사용하여 결과 조회
+
+SELECT *
+FROM EMPLOYEE
+WHERE (JOB_CODE, SALARY) IN(SELECT JOB_CODE, MIN(SALARY)
+							FROM EMPLOYEE	
+						GROUP BY JOB_CODE);
+			
+-- 다중행 다중열 서브쿼리와 일반 단일행 서브쿼리 차이
+-- 퇴사한 여직원과 같은 직급, 같은 부서에 근무하는 직원들의 정보 조회.
+-- 단일행(결과값이 하나 나오는 서브쿼리)
+SELECT *
+FROM EMPLOYEE
+WHERE DEPT_CODE = (SELECT DEPT_CODE FROM EMPLOYEE WHERE ENT_YN = 'Y')
+  AND JOB_CODE = (SELECT JOB_CODE FROM EMPLOYEE WHERE ENT_YN ='Y');
+ 
+
+SELECT *
+FROM EMPLOYEE
+WHERE (DEPT_CODE, JOB_CODE) = (SELECT DEPT_CODE, JOB_CODE FROM EMPLOYEE WHERE ENT_YN = 'Y');
+
+-- 서브쿼리의 사용 위치
+-- SELECT, FROM, WHERE, GROUP BY, HAVING, ORDER BY, JOIN
+-- DML : INSERT, UPDATE, DELETE
+-- DDL : CREATE TABLE, CREATE VIEW
+
+-- FROM 위치에 사용되는 서브쿼리는
+-- 테이블 명으로 테이블을 직접 조회하는 대신
+-- 서브쿼리의 결과(RESULT SET)을 테이블 처럼 활용
+-- Inline View(인라인 뷰) 라고 부른다.
+
+SELECT *
+FROM( 
+		SELECT EMP_ID, EMP_NAME, DEPT_TITLE, JOB_NAME
+		FROM EMPLOYEE
+		JOIN DEPARTMENT ON DEPT_CODE = DEPT_ID
+		JOIN JOB USING(JOB_CODE)
+	) TA;
+
+-- 15문제 만들기
