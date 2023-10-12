@@ -331,6 +331,17 @@ FROM EMPLOYEE;
 SELECT STR_TO_DATE(SUBSTR(EMP_NO,1,6), '%y%m%d')
 FROM EMPLOYEE;
 
+SELECT EMP_NAME, DEPT_CODE, 
+      CONCAT(SUBSTR(EMP_NO, 1, 2),  '년 ', SUBSTR(EMP_NO, 3, 2), '월 ', 
+      		 SUBSTR(EMP_NO, 5, 2) , '일 ') 생년월일,
+      EXTRACT(YEAR FROM NOW()) - 
+     EXTRACT(YEAR FROM (STR_TO_DATE(CONCAT('19',SUBSTR(EMP_NO, 1, 6)), '%Y%m%d'))) +1  나이
+FROM EMPLOYEE
+WHERE EMP_ID NOT IN (200, 201, 214)
+ORDER BY 1;
+
+
+
 -- 5.  부서코드가 D5이면 총무부, D6이면 기획부, D9이면 영업부로 처리하시오.
 --   단, 부서코드가 D5, D6, D9 인 직원의 정보만 조회함
 --  => case 사용
